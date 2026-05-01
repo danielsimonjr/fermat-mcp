@@ -1,5 +1,6 @@
 from typing import List, Union, Literal, get_args, Any, Tuple, Optional
-from sympy import Matrix, sympify, nsimplify
+from sympy import Matrix, nsimplify
+from .safe_parse import safe_sympify
 
 # Define operation types for type hints
 MatrixOperation = Literal["create", "det", "inv", "rref", "eigenvals"]
@@ -8,39 +9,42 @@ MatrixOperation = Literal["create", "det", "inv", "rref", "eigenvals"]
 def _parse_matrix_data(data: Union[List, Tuple, str]) -> List[List[Any]]:
     """Parse matrix data from various input formats."""
     if isinstance(data, str):
-        # Handle string input like "1 2; 3 4" or "[1, 2] [3, 4]"
+        # Handle string input like "1 2; 3 4" or "[1, 2] [3, 4]". Every cell
+        # value goes through `safe_sympify` so the unsafe `sympify`/`eval`
+        # codepath is never reachable from MCP arguments.
         if ";" in data:
             # Handle MATLAB-style format: "1 2; 3 4"
             rows = [row.strip() for row in data.split(";") if row.strip()]
-            return [[sympify(x) for x in row.split()] for row in rows]
+            return [[safe_sympify(x) for x in row.split()] for row in rows]
         else:
             # Handle list of lists format: "[1, 2] [3, 4]"
             import ast
 
             try:
-                # Try to parse as a list of lists
+                # Try to parse as a list of lists. `ast.literal_eval` is the
+                # right primitive here — it only accepts Python literals.
                 parsed = ast.literal_eval("[" + data.replace(" ", ",") + "]")
                 if all(isinstance(row, (list, tuple)) for row in parsed):
-                    return [[sympify(x) for x in row] for row in parsed]
+                    return [[safe_sympify(x) for x in row] for row in parsed]
                 elif all(not isinstance(x, (list, tuple)) for x in parsed):
                     # Single row matrix
-                    return [[sympify(x) for x in parsed]]
+                    return [[safe_sympify(x) for x in parsed]]
             except (ValueError, SyntaxError):
                 pass
 
             # Try space-separated values
             return [
-                [sympify(x) for x in row.split()]
+                [safe_sympify(x) for x in row.split()]
                 for row in data.split("\n")
                 if row.strip()
             ]
 
     # Handle list/tuple input
     if all(isinstance(row, (list, tuple)) for row in data):
-        return [[sympify(x) for x in row] for row in data]
+        return [[safe_sympify(x) for x in row] for row in data]
     elif all(not isinstance(x, (list, tuple)) for x in data):
         # Single row matrix
-        return [[sympify(x) for x in data]]
+        return [[safe_sympify(x) for x in data]]
 
     raise ValueError("Invalid matrix format")
 

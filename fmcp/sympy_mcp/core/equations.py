@@ -2,7 +2,6 @@ from typing import List, Optional, Union, Literal, get_args
 from sympy import (
     Expr,
     Symbol,
-    sympify,
     solve as _solve,
     solveset as _solveset,
     linsolve as _linsolve,
@@ -10,6 +9,7 @@ from sympy import (
     FiniteSet,
 )
 from sympy.solvers.solveset import nonlinsolve as _nonlinsolve
+from .safe_parse import safe_sympify
 
 # Define operation types for type hints
 EquationOperation = Literal["solve", "solveset", "linsolve", "nonlinsolve"]
@@ -37,12 +37,14 @@ def _parse_equations(equations: Union[str, List[str]]) -> List[Expr]:
     parsed = []
     for eq in equations:
         if isinstance(eq, str):
-            # Handle both 'x + y = 1' and 'Eq(x + y, 1)' formats
+            # Handle both 'x + y = 1' and 'Eq(x + y, 1)' formats. We route
+            # every user-supplied string through the safe parser so the
+            # eval-based codepath inside `sympify` is never reached.
             if "=" in eq and not eq.strip().startswith("Eq("):
                 left, right = eq.split("=", 1)
-                parsed.append(Eq(sympify(left), sympify(right)))
+                parsed.append(Eq(safe_sympify(left), safe_sympify(right)))
             else:
-                parsed.append(sympify(eq))
+                parsed.append(safe_sympify(eq))
         else:
             parsed.append(eq)
     return parsed
@@ -56,7 +58,7 @@ def _parse_symbols(symbols: Union[str, List[str], None]) -> List[Symbol]:
     if not isinstance(symbols, (list, tuple)):
         symbols = [symbols]
 
-    return [sympify(sym) if isinstance(sym, str) else sym for sym in symbols]
+    return [safe_sympify(sym) if isinstance(sym, str) else sym for sym in symbols]
 
 
 def equation_operation(
@@ -185,9 +187,9 @@ def equation_operation(
                 if isinstance(eq, str):
                     if "=" in eq:
                         left, right = eq.split("=", 1)
-                        A.append(sympify(left) - sympify(right))
+                        A.append(safe_sympify(left) - safe_sympify(right))
                     else:
-                        A.append(sympify(eq))
+                        A.append(safe_sympify(eq))
                 else:
                     A.append(eq)
             result = _linsolve(A, syms)

@@ -1,11 +1,11 @@
 from typing import List, Optional, Union, Literal, get_args
 from sympy import (
-    sympify,
     simplify as _simplify,
     expand as _expand,
     factor as _factor,
     collect as _collect,
 )
+from .safe_parse import safe_sympify
 
 # Define operation types for type hints
 AlgebraOperation = Literal["simplify", "expand", "factor", "collect"]
@@ -58,10 +58,13 @@ def algebra_operation(
         >>> algebra_operation('collect', 'x*y + x - 3 + 2*x**2 - z*x**2 + x**3', 'x')
         'x**3 + x**2*(2 - z) + x*(y + 1) - 3'
     """
-    # Convert string to SymPy expression if needed
-    expr_obj = sympify(expr) if isinstance(expr, str) else expr
+    # Convert string to SymPy expression via the safe parser; user input
+    # must NEVER reach `sympify`/`eval`.
+    expr_obj = safe_sympify(expr) if isinstance(expr, str) else expr
 
-    # Process symbols if provided
+    # Process symbols if provided. `collect` accepts symbol names as strings
+    # or sympy Symbols; we keep names as-is so SymPy handles them internally
+    # via its own restricted Symbol constructor.
     syms_list = None
     if syms is not None:
         if isinstance(syms, (str)):
@@ -71,7 +74,10 @@ def algebra_operation(
 
     # Dispatch to the appropriate operation
     if operation == "simplify":
-        return str(_simplify(expr_obj, ratio=ratio, measure=measure, rational=rational))
+        simplify_kwargs = {"ratio": ratio, "rational": rational}
+        if measure is not None:
+            simplify_kwargs["measure"] = measure
+        return str(_simplify(expr_obj, **simplify_kwargs))
     elif operation == "expand":
         return str(
             _expand(
@@ -88,14 +94,10 @@ def algebra_operation(
             )
         )
     elif operation == "factor":
-        return str(
-            _factor(
-                expr_obj,
-                frac=frac,
-                sign=sign,
-                **({"rational": True} if rational else {}),
-            )
-        )
+        factor_kwargs = {"deep": deep}
+        # Note: sympy.factor doesn't support 'frac' or 'sign' parameters directly
+        # It uses 'fraction', 'modulus', 'gaussian', 'extension', etc.
+        return str(_factor(expr_obj, **factor_kwargs))
     elif operation == "collect":
         if syms_list is None:
             raise ValueError("Symbols must be provided for 'collect' operation")

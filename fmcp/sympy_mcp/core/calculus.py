@@ -1,11 +1,11 @@
 from typing import Optional, Literal, get_args, Union
 from sympy import (
-    sympify,
     diff as _diff,
     integrate as _integrate,
     limit as _limit,
     series as _series,
 )
+from .safe_parse import safe_sympify
 
 # Define operation types for type hints
 CalculusOperation = Literal["diff", "integrate", "limit", "series"]
@@ -56,11 +56,13 @@ def calculus_operation(
         >>> calculus_operation('series', 'exp(x)', 'x', point=0, n=3)
         '1 + x + x**2/2 + O(x**3)'
     """
-    # Convert string to SymPy expression
-    expr_obj = sympify(expr)
+    # Convert user-supplied strings via the safe parser. `sympify` falls back
+    # to `eval` on the parsed token stream and is documented as unsafe for
+    # untrusted input — never use it on MCP tool arguments.
+    expr_obj = safe_sympify(expr)
 
     # Convert symbol string to Symbol if provided
-    sym_obj = sympify(sym) if sym is not None else None
+    sym_obj = safe_sympify(sym) if sym is not None else None
 
     if operation == "diff":
         # Handle differentiation
@@ -76,8 +78,8 @@ def calculus_operation(
         # Check for definite integral
         if lower is not None or upper is not None:
             # Definite integral
-            lower_val = sympify(lower) if isinstance(lower, str) else lower
-            upper_val = sympify(upper) if isinstance(upper, str) else upper
+            lower_val = safe_sympify(lower) if isinstance(lower, str) else lower
+            upper_val = safe_sympify(upper) if isinstance(upper, str) else upper
             return str(_integrate(expr_obj, (sym_obj, lower_val, upper_val)))
         else:
             # Indefinite integral
@@ -89,7 +91,7 @@ def calculus_operation(
             raise ValueError("Symbol must be provided for limit")
 
         # Convert point to SymPy expression if it's a string
-        point_val = sympify(point) if isinstance(point, str) else point
+        point_val = safe_sympify(point) if isinstance(point, str) else point
 
         return str(_limit(expr_obj, sym_obj, point_val, direction))
 
@@ -99,7 +101,7 @@ def calculus_operation(
             raise ValueError("Symbol must be provided for series expansion")
 
         # Convert point to SymPy expression if it's a string
-        point_val = sympify(point) if isinstance(point, str) else point
+        point_val = safe_sympify(point) if isinstance(point, str) else point
 
         return str(_series(expr_obj, sym_obj, point_val, series_n).removeO())
 

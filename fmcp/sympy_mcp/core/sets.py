@@ -4,11 +4,11 @@ from sympy import (
     FiniteSet as _FiniteSet,
     Union as _Union,
     Intersection as _Intersection,
-    sympify,
     S,
     Basic,
 )
 from sympy.sets import Set
+from .safe_parse import safe_sympify
 
 # Define operation types for type hints
 SetOperation = Literal[
@@ -24,14 +24,19 @@ SetOperation = Literal[
 
 
 def _parse_set_elements(elements):
-    """Parse elements for finite sets."""
+    """Parse elements for finite sets.
+
+    User-supplied strings are parsed via `safe_sympify` (parse_expr with empty
+    name dictionaries) instead of `sympify` to avoid the documented eval-based
+    codepath and prompt-injection-driven RCE risk.
+    """
     if isinstance(elements, (list, tuple)):
-        return [sympify(x) for x in elements]
+        return [safe_sympify(x) for x in elements]
     elif isinstance(elements, str):
         if elements.startswith("{") and elements.endswith("}"):
             elements = elements[1:-1]
-        return [sympify(x.strip()) for x in elements.split(",") if x.strip()]
-    return [sympify(elements)]
+        return [safe_sympify(x.strip()) for x in elements.split(",") if x.strip()]
+    return [safe_sympify(elements)]
 
 
 def _parse_interval_args(args: Dict[str, Any]) -> Dict[str, Any]:
@@ -39,7 +44,9 @@ def _parse_interval_args(args: Dict[str, Any]) -> Dict[str, Any]:
     parsed = {}
     for key in ["start", "end", "left_open", "right_open"]:
         if key in args:
-            parsed[key] = sympify(args[key]) if key in ["start", "end"] else args[key]
+            parsed[key] = (
+                safe_sympify(args[key]) if key in ["start", "end"] else args[key]
+            )
     return parsed
 
 
@@ -93,7 +100,7 @@ def set_operation(operation: SetOperation, *args, **kwargs) -> Union[Set, bool, 
     elif operation == "interval":
         if args and len(args) == 2 and not kwargs:
             # Handle interval(0, 1) syntax
-            start, end = map(sympify, args)
+            start, end = map(safe_sympify, args)
             left_open = kwargs.get("left_open", False)
             right_open = kwargs.get("right_open", False)
         else:
@@ -162,7 +169,7 @@ def set_operation(operation: SetOperation, *args, **kwargs) -> Union[Set, bool, 
 
         # Convert element to a SymPy object if it isn't already
         if not isinstance(element, Basic):
-            element = sympify(element)
+            element = safe_sympify(element)
 
         return element in set_obj
 
