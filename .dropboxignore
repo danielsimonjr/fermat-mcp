@@ -1,0 +1,53 @@
+# Git internals — keeps Dropbox out of .git so git operations don't get blocked
+.git/
+
+# Virtual environments
+.venv/
+venv/
+.venv.*/
+
+# Python bytecode + caches
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+
+# uv
+# (uv.lock IS tracked — keep it in git, just ignored by Dropbox while still in workspace)
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# Testing
+coverage/
+.coverage
+htmlcov/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+*.log
+*.tmp
+.tmp/
+
+# Claude Code settings (local only)
+.claude/
+.mcp.json
