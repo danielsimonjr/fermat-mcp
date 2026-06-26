@@ -63,6 +63,13 @@ def eqn_chart(
     x = np.linspace(float(x_min), float(x_max), int(num_points))
 
     for eq in equations:
+        # Reject Python dunder access. No legitimate math expression contains "__",
+        # and it is the primary vector for escaping an eval sandbox (attribute
+        # introspection, __import__, etc.). Combined with the empty __builtins__
+        # below, this blocks arbitrary code execution from caller-supplied strings.
+        if "__" in eq:
+            raise ValueError(f"disallowed expression (contains '__'): {eq}")
+
         eq_py = eq.replace("^", "**")
         eq_py = re.sub(r"(\W|^)([a-z]+)\(", r"\1np.\2(", eq_py)
 
@@ -70,6 +77,10 @@ def eqn_chart(
             y = eval(
                 eq_py,
                 {
+                    # eval() auto-injects the real builtins module when __builtins__
+                    # is absent, exposing __import__/open/exec. Force it empty so the
+                    # expression can only touch the math names provided below.
+                    "__builtins__": {},
                     "x": x,
                     "np": np,
                     "sin": np.sin,
