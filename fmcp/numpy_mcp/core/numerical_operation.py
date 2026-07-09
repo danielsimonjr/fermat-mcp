@@ -155,7 +155,10 @@ def numerical_operation(
         vals, vecs = np.linalg.eig(a_array)
         return {"eigenvalues": vals.tolist(), "eigenvectors": vecs.tolist()}
     elif operation == "eigenvals":
-        vals = np.linalg.eigvals(a_array)
+        # eigvals returns a complex dtype for general matrices; return real floats when
+        # the imaginary parts are negligible. Python complex isn't JSON-serializable and
+        # the MCP response must be — genuinely-complex eigenvalues are still preserved.
+        vals = np.real_if_close(np.linalg.eigvals(a_array))
         return vals.tolist()
     elif operation == "solve":
         return np.linalg.solve(a_array, b_array).tolist()
