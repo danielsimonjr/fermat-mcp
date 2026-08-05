@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Security (2026-08-04)
+
+- `cryptography` 49.0.0 -> 50.0.0 (high). Cleared via
+  `uv lock --upgrade-package cryptography`; `pyproject.toml` unchanged.
+
+
 ### Added
 
 - **Windows CI leg.** CI ran on `ubuntu-latest` only — but Windows is the *production*
