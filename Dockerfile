@@ -1,6 +1,6 @@
 # Generated for Smithery / container deploy — TypeScript on Bun, MCP 2.0
 
-FROM oven/bun:1.2-alpine
+FROM oven/bun:1.4-alpine
 
 WORKDIR /app
 
