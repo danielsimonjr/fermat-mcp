@@ -1,0 +1,33 @@
+{
+  "name": "fermat-mcp",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "^1.4.1",
+    "@types/mathjs": "^9.4.2",
+    "typescript": "5.9.2"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
+    "mathjs": "^15.2.0",
+    "ml-matrix": "^6.15.0",
+    "nerdamer": "^1.1.13",
+    "zod": "^4.5.4"
+  },
+  "version": "0.2.0",
+  "description": "MCP 2.0 server for mathematical computation and plotting (TypeScript on Bun)",
+  "license": "MIT",
+  "bin": {
+    "fermat-mcp": "src/index.ts"
+  },
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "start:http": "SMITHERY_DEPLOYMENT=1 bun run src/index.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "bun": ">=1.4.0"
+  }
+}

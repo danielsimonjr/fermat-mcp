@@ -40,7 +40,7 @@ Follow this common workflow:
 | **Fork the repo**        | Click “Fork” on GitHub and clone your copy                                              |
 | **Add upstream remote**  | `git remote add upstream https://github.com/abhiphile/fermat-mcp.git`                 |
 | **Create a feature branch** | `git checkout -b feature/description` or `fix/issue-123`                             |
-| **Install dependencies** | Follow README setup instructions (e.g. via `setup.sh`, Docker)                         |
+| **Install dependencies** | `bun install` (or `./setup.sh`); Bun 1.2+ required                                      |
 | **Keep in sync**         | Regularly `git fetch upstream` & `git rebase upstream/main`                            |
 
 ---
@@ -54,7 +54,7 @@ Before submitting an issue, please:
 3. Provide a clear description:
    - Steps to reproduce
    - Expected vs actual behavior
-   - Environment details (OS, Python version, etc.)
+   - Environment details (OS, Bun version, etc.)
    - Error logs or minimal reproducible example
 
 For feature requests, describe the problem and proposed solution. Add labels like `bug`, `enhancement`, or `good first issue` as needed.
@@ -78,9 +78,9 @@ Maintain cordial and respectful tone—even when closing or rejecting contributi
 
 ## 5. Code Style & Testing <a name="code‑style"></a>
 
-- Follow the style conventions laid out in the project (e.g. Black, RUFF, Flake8)
-- Run linting and formatting locally before committing:
+- TypeScript on Bun; prefer strict typing and small focused modules under `src/`
+- Run checks locally before committing:
   ```bash
-  ruff .
-  black .
-  pytest
+  bun run typecheck
+  bun test
+  ```

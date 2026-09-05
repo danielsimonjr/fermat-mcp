@@ -1,18 +1,22 @@
-# Python-generated files
-__pycache__/
-*.py[oc]
-build/
+# Dependencies / build
+node_modules/
 dist/
-wheels/
 *.egg-info
-.vscode
+build/
+wheels/
 
-# Virtual environments
-.venv
+# Environments
+.venv/
+.env
 
-# Claude Code settings (local only)
+# Editor / local MCP
+.vscode/
 .claude/
 .mcp.json
-# Added by post-migration audit (2026-05-01)
-node_modules/
-.env
+
+# Python leftovers (if any)
+__pycache__/
+*.py[oc]
+
+# OS
+.DS_Store
