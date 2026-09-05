@@ -26,5 +26,8 @@
     "start:http": "SMITHERY_DEPLOYMENT=1 bun run src/index.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "bun": ">=1.4.0"
   }
 }
