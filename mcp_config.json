@@ -1,1 +1,5 @@
-{"transport": "stdio", "log_level": "info"}
+{
+  "transport": "stdio",
+  "log_level": "info",
+  "runtime": "bun"
+}

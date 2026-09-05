@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- **Migrate to TypeScript on Bun + MCP 2.0.** Replace the Python FastMCP stack
+  (`server.py`, `fmcp/`, `pyproject.toml`, `uv.lock`) with a Bun TypeScript
+  server using `@modelcontextprotocol/server` 2.0 (`serveStdio` /
+  `createMcpHandler`). Tool names and module prefixes (`numpy_mcp_*`,
+  `sympy_mcp_*`, `mpl_mcp_*`) are preserved. Numerical work uses `ml-matrix`;
+  symbolic work uses `nerdamer`; plots emit SVG. CI and Docker now target Bun.
+
 ### Security (2026-08-04)
 
 - `cryptography` 49.0.0 -> 50.0.0 (high). Cleared via

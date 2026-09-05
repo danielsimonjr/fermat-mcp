@@ -1,32 +1,17 @@
-#!/bin/bash
-set -e  # Exit on error
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Change to the directory where this script is located
 cd "$(dirname "$0")"
 
-VENV=".venv"
-
-# Create virtual environment if not present
-if [ ! -d "$VENV" ]; then
-    echo "Creating virtual environment..."
-    uv venv "$VENV"
-    source "$VENV/bin/activate"
-    uv pip install --upgrade pip
-else
-    echo "Virtual environment already exists"
+if ! command -v bun >/dev/null 2>&1; then
+  echo "Installing Bun..."
+  curl -fsSL https://bun.sh/install | bash
+  export BUN_INSTALL="${HOME}/.bun"
+  export PATH="${BUN_INSTALL}/bin:${PATH}"
 fi
 
-# Activate environment and install dependencies
 echo "Installing dependencies..."
-source "$VENV/bin/activate"
+bun install --frozen-lockfile 2>/dev/null || bun install
 
-if [ ! -f "pyproject.toml" ]; then
-    echo "ERROR: pyproject.toml not found"
-    exit 1
-fi
-
-uv sync
-
-# Start the MCP server
 echo "Starting MCP server..."
-python server.py
+exec bun run src/index.ts

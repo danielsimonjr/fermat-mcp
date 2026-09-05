@@ -1,11 +1,8 @@
-# Python-generated files
-__pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
-.vscode
-
-# Virtual environments
-.venv
+node_modules
+.git
+.env
+*.md
+!README.md
+public/images
+.github
+.dropboxignore
